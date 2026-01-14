@@ -183,11 +183,58 @@ function createStatusDropdown(container, onSelect, initialCode = 200) {
     });
   }
   
+  // Show error message
+  function showError(message) {
+    // Remove existing error
+    const existingError = container.querySelector('.status-error');
+    if (existingError) {
+      existingError.remove();
+    }
+    
+    // Add error message
+    const error = document.createElement('div');
+    error.className = 'status-error';
+    error.textContent = message;
+    dropdown.appendChild(error);
+    
+    // Remove error after 3 seconds
+    setTimeout(() => {
+      if (error.parentNode) {
+        error.remove();
+      }
+    }, 3000);
+    
+    // Add error class to input
+    input.classList.add('error');
+    setTimeout(() => {
+      input.classList.remove('error');
+    }, 3000);
+  }
+  
+  // Validate status code
+  function validateStatusCode(code) {
+    const num = parseInt(code);
+    if (isNaN(num)) {
+      return { valid: false, error: 'Invalid status code' };
+    }
+    if (!HTTP_STATUS_CODES[num]) {
+      return { valid: false, error: 'Invalid status code' };
+    }
+    return { valid: true, code: num, text: HTTP_STATUS_CODES[num] };
+  }
+  
   // Select an option
   function selectOption(code, text) {
     selectedCode = parseInt(code);
     selectedText = text;
     input.value = `${code} ${text}`;
+    
+    // Remove any error
+    const existingError = container.querySelector('.status-error');
+    if (existingError) {
+      existingError.remove();
+    }
+    input.classList.remove('error');
     
     options.forEach(o => o.classList.remove('selected'));
     const selected = container.querySelector(`.status-option[data-code="${code}"]`);
@@ -217,11 +264,11 @@ function createStatusDropdown(container, onSelect, initialCode = 200) {
       const match = input.value.match(/^(\d+)/);
       if (match) {
         const code = parseInt(match[1]);
-        if (HTTP_STATUS_CODES[code]) {
-          selectOption(code, HTTP_STATUS_CODES[code]);
-        } else if (isValidStatusCode(code)) {
-          selectOption(code, 'Unknown');
+        const validation = validateStatusCode(code);
+        if (validation.valid) {
+          selectOption(validation.code, validation.text);
         } else {
+          showError(validation.error);
           input.value = `${selectedCode} ${selectedText}`;
         }
       } else {
@@ -240,10 +287,12 @@ function createStatusDropdown(container, onSelect, initialCode = 200) {
       const match = input.value.match(/^(\d+)/);
       if (match) {
         const code = parseInt(match[1]);
-        if (HTTP_STATUS_CODES[code]) {
-          selectOption(code, HTTP_STATUS_CODES[code]);
-        } else if (isValidStatusCode(code)) {
-          selectOption(code, 'Unknown');
+        const validation = validateStatusCode(code);
+        if (validation.valid) {
+          selectOption(validation.code, validation.text);
+        } else {
+          showError(validation.error);
+          input.value = `${selectedCode} ${selectedText}`;
         }
       }
     }
@@ -263,10 +312,24 @@ function createStatusDropdown(container, onSelect, initialCode = 200) {
   });
   
   return {
-    getValue: () => ({ code: selectedCode, text: selectedText }),
+    getValue: () => {
+      // Validate before returning
+      const validation = validateStatusCode(selectedCode);
+      if (!validation.valid) {
+        throw new Error('Invalid status code');
+      }
+      return { code: selectedCode, text: selectedText };
+    },
     setValue: (code) => {
-      const text = HTTP_STATUS_CODES[code] || 'Unknown';
-      selectOption(code, text);
+      const validation = validateStatusCode(code);
+      if (validation.valid) {
+        selectOption(validation.code, validation.text);
+      } else {
+        showError(validation.error);
+      }
+    },
+    showError: (message) => {
+      showError(message || 'Invalid status code');
     },
     reset: () => {
       selectOption(200, 'OK');

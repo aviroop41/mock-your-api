@@ -320,8 +320,38 @@ async function saveRule() {
     }
   });
   
-  // Get status from dropdown
-  const statusValue = statusDropdown ? statusDropdown.getValue() : { code: 200, text: 'OK' };
+  // Get status from dropdown and validate
+  let statusValue;
+  
+  // First, validate the input field directly
+  const statusInput = elements.statusDropdownContainer?.querySelector('.status-search');
+  if (statusInput) {
+    const match = statusInput.value.match(/^(\d+)/);
+    if (match) {
+      const code = parseInt(match[1]);
+      if (!window.HTTP_STATUS_CODES || !window.HTTP_STATUS_CODES[code]) {
+        showNotification('Invalid status code. Please select a valid status code from the list.', 'error');
+        // Trigger error display in dropdown
+        if (statusDropdown && statusDropdown.showError) {
+          statusDropdown.showError('Invalid status code');
+        }
+        return;
+      }
+    }
+  }
+  
+  try {
+    statusValue = statusDropdown ? statusDropdown.getValue() : { code: 200, text: 'OK' };
+    
+    // Additional validation: ensure the code exists in HTTP_STATUS_CODES
+    if (!window.HTTP_STATUS_CODES || !window.HTTP_STATUS_CODES[statusValue.code]) {
+      showNotification('Invalid status code. Please select a valid status code from the list.', 'error');
+      return;
+    }
+  } catch (error) {
+    showNotification('Invalid status code. Please select a valid status code from the list.', 'error');
+    return;
+  }
   
   const ruleData = {
     name: name || null,

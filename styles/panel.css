@@ -794,6 +794,32 @@ body {
   flex: 1;
 }
 
+.status-error {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background-color: rgba(241, 76, 76, 0.15);
+  border: 1px solid var(--error);
+  border-radius: var(--radius-sm);
+  color: var(--error);
+  font-size: 12px;
+  animation: slideDown 0.3s ease;
+}
+
+.status-search.error {
+  border-color: var(--error);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Responsive adjustments */
 @media (max-width: 800px) {
   .main-content {
