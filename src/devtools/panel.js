@@ -5,6 +5,7 @@
 // State
 let currentRules = [];
 let editingRuleId = null;
+let statusDropdown = null;
 
 // DOM Elements
 const elements = {
@@ -29,8 +30,7 @@ const elements = {
   requestBody: document.getElementById('requestBody'),
   
   // Response
-  statusCode: document.getElementById('statusCode'),
-  statusText: document.getElementById('statusText'),
+  statusDropdownContainer: document.getElementById('statusDropdownContainer'),
   responseHeadersList: document.getElementById('responseHeadersList'),
   addResponseHeader: document.getElementById('addResponseHeader'),
   responseBody: document.getElementById('responseBody'),
@@ -56,6 +56,16 @@ async function init() {
   setupEventListeners();
   addDefaultResponseHeader();
   setupStorageListener();
+  initializeStatusDropdown();
+}
+
+/**
+ * Initialize status dropdown
+ */
+function initializeStatusDropdown() {
+  statusDropdown = createStatusDropdown(elements.statusDropdownContainer, (code, text) => {
+    // Update status text when code changes (if needed)
+  }, 200);
 }
 
 /**
@@ -169,11 +179,7 @@ function setupEventListeners() {
     });
   });
   
-  // Status code change - auto-update status text
-  elements.statusCode.addEventListener('change', () => {
-    const code = parseInt(elements.statusCode.value);
-    elements.statusText.value = getStatusText(code);
-  });
+  // Status dropdown handles code and text together
 }
 
 /**
@@ -231,8 +237,9 @@ function clearForm() {
   elements.urlInput.value = '';
   elements.requestHeadersList.innerHTML = '';
   elements.requestBody.value = '';
-  elements.statusCode.value = '200';
-  elements.statusText.value = 'OK';
+  if (statusDropdown) {
+    statusDropdown.setValue(200);
+  }
   elements.responseHeadersList.innerHTML = '';
   addDefaultResponseHeader();
   elements.responseBody.value = '';
@@ -313,6 +320,9 @@ async function saveRule() {
     }
   });
   
+  // Get status from dropdown
+  const statusValue = statusDropdown ? statusDropdown.getValue() : { code: 200, text: 'OK' };
+  
   const ruleData = {
     name: name || null,
     request: {
@@ -322,8 +332,8 @@ async function saveRule() {
       body: elements.requestBody.value || null,
     },
     response: {
-      status: parseInt(elements.statusCode.value) || 200,
-      statusText: elements.statusText.value || 'OK',
+      status: statusValue.code,
+      statusText: statusValue.text,
       headers: responseHeaders,
       body: elements.responseBody.value || '',
     },
@@ -406,6 +416,7 @@ function renderRulesList(rules = currentRules) {
       </div>
       <div class="rule-actions">
         <button class="btn btn-ghost btn-sm edit-rule">Edit</button>
+        <button class="btn btn-ghost btn-sm duplicate-rule">Duplicate</button>
         <button class="btn btn-ghost btn-sm delete-rule">Delete</button>
       </div>
     </div>
@@ -422,6 +433,7 @@ function renderRulesList(rules = currentRules) {
     });
     
     card.querySelector('.edit-rule').addEventListener('click', () => editRule(ruleId));
+    card.querySelector('.duplicate-rule').addEventListener('click', () => duplicateRule(ruleId));
     card.querySelector('.delete-rule').addEventListener('click', () => deleteRule(ruleId));
   });
 }
@@ -469,8 +481,11 @@ function editRule(ruleId) {
   }
   
   elements.requestBody.value = rule.request.body || '';
-  elements.statusCode.value = rule.response.status;
-  elements.statusText.value = rule.response.statusText;
+  
+  // Set status dropdown
+  if (statusDropdown) {
+    statusDropdown.setValue(rule.response.status);
+  }
   
   // Response headers
   elements.responseHeadersList.innerHTML = '';
@@ -488,6 +503,43 @@ function editRule(ruleId) {
   
   // Scroll to top
   document.querySelector('.editor-panel').scrollTop = 0;
+}
+
+/**
+ * Duplicate a rule
+ */
+async function duplicateRule(ruleId) {
+  try {
+    const rule = currentRules.find(r => r.id === ruleId);
+    if (!rule) {
+      showNotification('Rule not found', 'error');
+      return;
+    }
+    
+    // Create a copy of the rule with new ID and updated name
+    const duplicatedRule = {
+      name: rule.name ? `${rule.name} (Copy)` : null,
+      request: {
+        url: rule.request.url,
+        method: rule.request.method,
+        headers: { ...rule.request.headers },
+        body: rule.request.body,
+      },
+      response: {
+        status: rule.response.status,
+        statusText: rule.response.statusText,
+        headers: { ...rule.response.headers },
+        body: rule.response.body,
+      },
+    };
+    
+    await sendMessage({ type: 'ADD_RULE', payload: duplicatedRule });
+    await loadRules();
+    showNotification('Rule duplicated!', 'success');
+  } catch (error) {
+    console.error('Error duplicating rule:', error);
+    showNotification(`Error: ${error.message}`, 'error');
+  }
 }
 
 /**

@@ -149,15 +149,9 @@
             <div class="form-section">
               <h3 class="section-title">Mock Response</h3>
               
-              <div class="form-row">
-                <div class="form-group status-group">
-                  <label class="form-label">Status Code</label>
-                  <input type="number" id="editStatusCode" class="form-input" value="200" min="100" max="599">
-                </div>
-                <div class="form-group status-text-group">
-                  <label class="form-label">Status Text</label>
-                  <input type="text" id="editStatusText" class="form-input" value="OK">
-                </div>
+              <div class="form-group">
+                <label class="form-label">Status Code</label>
+                <div id="statusDropdownContainer" class="status-dropdown-container"></div>
               </div>
 
               <div class="collapsible-section">
@@ -193,6 +187,7 @@
   </div>
 
   <script src="../utils/curl-parser.js"></script>
+  <script src="../utils/http-status-codes.js"></script>
   <script src="rules-editor.js"></script>
 </body>
 </html>

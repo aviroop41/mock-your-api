@@ -640,18 +640,20 @@ body {
 /* Notifications */
 .notification {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
-  padding: 12px 20px;
+  top: 0;
+  right: 0;
+  padding: 16px 24px;
   background-color: var(--bg-tertiary);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
   box-shadow: var(--shadow-md);
-  font-size: 13px;
+  font-size: 15px;
+  font-weight: 500;
   opacity: 0;
-  transform: translateY(10px);
+  transform: translateY(-100%);
   transition: opacity 0.3s, transform 0.3s;
   z-index: 1000;
+  min-width: 300px;
 }
 
 .notification.show {
@@ -696,6 +698,100 @@ body {
 ::selection {
   background-color: var(--accent-primary);
   color: white;
+}
+
+/* Status Dropdown */
+.status-dropdown {
+  position: relative;
+  width: 100%;
+}
+
+.status-dropdown-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.status-dropdown-input .status-search {
+  padding-right: 30px;
+  cursor: pointer;
+}
+
+.status-dropdown-arrow {
+  position: absolute;
+  right: 10px;
+  font-size: 10px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.status-dropdown-list {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 100;
+  margin-top: 4px;
+}
+
+.status-category {
+  padding: 4px 0;
+}
+
+.status-category-label {
+  padding: 6px 12px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background-color: var(--bg-tertiary);
+  position: sticky;
+  top: 0;
+}
+
+.status-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.status-option:hover {
+  background-color: var(--bg-hover);
+}
+
+.status-option.selected {
+  background-color: var(--accent-primary);
+}
+
+.status-option .status-code {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 12px;
+  min-width: 35px;
+}
+
+.status-option .status-text {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.status-option.selected .status-text {
+  color: white;
+}
+
+.status-dropdown-container {
+  flex: 1;
 }
 
 /* Responsive adjustments */

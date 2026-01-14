@@ -6,6 +6,7 @@
 let allRules = [];
 let filteredRules = [];
 let editingRuleId = null;
+let statusDropdown = null;
 
 // DOM Elements
 const elements = {
@@ -40,8 +41,7 @@ const elements = {
   editUrl: document.getElementById('editUrl'),
   editRequestHeaders: document.getElementById('editRequestHeaders'),
   editRequestBody: document.getElementById('editRequestBody'),
-  editStatusCode: document.getElementById('editStatusCode'),
-  editStatusText: document.getElementById('editStatusText'),
+  statusDropdownContainer: document.getElementById('statusDropdownContainer'),
   editResponseHeaders: document.getElementById('editResponseHeaders'),
   editResponseBody: document.getElementById('editResponseBody'),
   
@@ -201,6 +201,12 @@ function renderRules() {
         editBtn.addEventListener('click', () => openEditModal(rule));
       }
       
+      // Duplicate button
+      const duplicateBtn = card.querySelector('.duplicate-btn');
+      if (duplicateBtn) {
+        duplicateBtn.addEventListener('click', () => duplicateRule(rule.id));
+      }
+      
       // Delete button
       const deleteBtn = card.querySelector('.delete-btn');
       if (deleteBtn) {
@@ -247,6 +253,7 @@ function createRuleCard(rule) {
       
       <div class="rule-card-actions">
         <button class="btn btn-secondary btn-sm edit-btn">Edit</button>
+        <button class="btn btn-ghost btn-sm duplicate-btn">Duplicate</button>
         <button class="btn btn-ghost btn-sm delete-btn">Delete</button>
       </div>
     </div>
@@ -288,6 +295,43 @@ async function toggleRule(ruleId) {
 }
 
 /**
+ * Duplicate a rule
+ */
+async function duplicateRule(ruleId) {
+  try {
+    const rule = allRules.find(r => r.id === ruleId);
+    if (!rule) {
+      showNotification('Rule not found', 'error');
+      return;
+    }
+    
+    // Create a copy of the rule with new ID and updated name
+    const duplicatedRule = {
+      name: rule.name ? `${rule.name} (Copy)` : null,
+      request: {
+        url: rule.request.url,
+        method: rule.request.method,
+        headers: { ...rule.request.headers },
+        body: rule.request.body,
+      },
+      response: {
+        status: rule.response.status,
+        statusText: rule.response.statusText,
+        headers: { ...rule.response.headers },
+        body: rule.response.body,
+      },
+    };
+    
+    await sendMessage({ type: 'ADD_RULE', payload: duplicatedRule });
+    await loadRules();
+    showNotification('Rule duplicated!', 'success');
+  } catch (error) {
+    console.error('Error duplicating rule:', error);
+    showNotification('Error duplicating rule', 'error');
+  }
+}
+
+/**
  * Delete a rule
  */
 async function deleteRule(ruleId) {
@@ -312,6 +356,10 @@ function openEditModal(rule = null) {
   editingRuleId = rule ? rule.id : null;
   elements.modalTitle.textContent = rule ? 'Edit Rule' : 'Add New Rule';
   
+  // Initialize status dropdown
+  const initialCode = rule ? rule.response.status : 200;
+  statusDropdown = createStatusDropdown(elements.statusDropdownContainer, null, initialCode);
+  
   if (rule) {
     // Populate form with rule data
     elements.editRuleName.value = rule.name || '';
@@ -319,8 +367,6 @@ function openEditModal(rule = null) {
     elements.editMethod.value = rule.request.method;
     elements.editUrl.value = rule.request.url;
     elements.editRequestBody.value = rule.request.body || '';
-    elements.editStatusCode.value = rule.response.status;
-    elements.editStatusText.value = rule.response.statusText || 'OK';
     elements.editResponseBody.value = rule.response.body || '';
     
     // Populate headers
@@ -330,8 +376,6 @@ function openEditModal(rule = null) {
     // Clear form for new rule
     elements.ruleForm.reset();
     elements.editCurlInput.value = '';
-    elements.editStatusCode.value = '200';
-    elements.editStatusText.value = 'OK';
     elements.editRequestHeaders.innerHTML = '';
     elements.editResponseHeaders.innerHTML = '';
     addDefaultResponseHeader();
@@ -402,6 +446,9 @@ async function saveRule() {
   const requestHeaders = collectHeaders(elements.editRequestHeaders);
   const responseHeaders = collectHeaders(elements.editResponseHeaders);
   
+  // Get status from dropdown
+  const statusValue = statusDropdown ? statusDropdown.getValue() : { code: 200, text: 'OK' };
+  
   const ruleData = {
     name: name || null,
     request: {
@@ -411,8 +458,8 @@ async function saveRule() {
       body: elements.editRequestBody.value || null,
     },
     response: {
-      status: parseInt(elements.editStatusCode.value) || 200,
-      statusText: elements.editStatusText.value || 'OK',
+      status: statusValue.code,
+      statusText: statusValue.text,
       headers: responseHeaders,
       body: elements.editResponseBody.value || '',
     },
