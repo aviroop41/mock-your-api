@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mock your APIs</title>
+  <link rel="stylesheet" href="../../styles/panel.css">
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <h1 class="logo">🔧 Mock your APIs</h1>
+        <span class="badge" id="ruleCount">0 rules</span>
+      </div>
+      <div class="header-right">
+        <label class="toggle-switch">
+          <input type="checkbox" id="globalToggle" checked>
+          <span class="toggle-slider"></span>
+          <span class="toggle-label">Mocking Enabled</span>
+        </label>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Left Panel - cURL Input & Editor -->
+      <section class="panel editor-panel">
+        <div class="panel-header">
+          <h2>Create Mock Rule</h2>
+          <button class="btn btn-secondary btn-sm" id="clearForm">Clear</button>
+        </div>
+
+        <!-- Rule Name -->
+        <div class="form-group">
+          <label class="form-label">Rule Name</label>
+          <input type="text" id="ruleName" class="form-input" placeholder="e.g., Get Users - Success Response">
+        </div>
+
+        <!-- cURL Input -->
+        <div class="form-group">
+          <label class="form-label">Paste cURL Command (auto-parses)</label>
+          <textarea 
+            id="curlInput" 
+            class="code-input" 
+            placeholder="curl 'https://api.example.com/users' -H 'Authorization: Bearer token'"
+            rows="4"
+          ></textarea>
+        </div>
+
+        <div class="divider">
+          <span>Request Configuration</span>
+        </div>
+
+        <!-- Request Details -->
+        <div class="form-row">
+          <div class="form-group method-group">
+            <label class="form-label">Method</label>
+            <select id="methodSelect" class="form-select">
+              <option value="GET">GET</option>
+              <option value="POST">POST</option>
+              <option value="PUT">PUT</option>
+              <option value="PATCH">PATCH</option>
+              <option value="DELETE">DELETE</option>
+              <option value="HEAD">HEAD</option>
+              <option value="OPTIONS">OPTIONS</option>
+            </select>
+          </div>
+          <div class="form-group url-group">
+            <label class="form-label">URL</label>
+            <input type="text" id="urlInput" class="form-input" placeholder="https://api.example.com/endpoint">
+          </div>
+        </div>
+
+        <!-- Request Headers -->
+        <div class="form-group collapsible">
+          <label class="form-label collapsible-header" data-target="requestHeaders">
+            <span class="collapse-icon">▼</span>
+            Request Headers (optional)
+          </label>
+          <div id="requestHeaders" class="collapsible-content">
+            <div id="requestHeadersList" class="key-value-list"></div>
+            <button class="btn btn-ghost btn-sm" id="addRequestHeader">+ Add Header</button>
+          </div>
+        </div>
+
+        <!-- Request Body -->
+        <div class="form-group collapsible">
+          <label class="form-label collapsible-header" data-target="requestBodySection">
+            <span class="collapse-icon">▼</span>
+            Request Body (optional)
+          </label>
+          <div id="requestBodySection" class="collapsible-content">
+            <textarea id="requestBody" class="code-input" placeholder='{"key": "value"}' rows="3"></textarea>
+          </div>
+        </div>
+
+        <div class="divider">
+          <span>Mock Response</span>
+        </div>
+
+        <!-- Response Status -->
+        <div class="form-row">
+          <div class="form-group status-group">
+            <label class="form-label">Status Code</label>
+            <input type="number" id="statusCode" class="form-input" value="200" min="100" max="599">
+          </div>
+          <div class="form-group status-text-group">
+            <label class="form-label">Status Text</label>
+            <input type="text" id="statusText" class="form-input" value="OK">
+          </div>
+        </div>
+
+        <!-- Response Headers -->
+        <div class="form-group collapsible">
+          <label class="form-label collapsible-header" data-target="responseHeaders">
+            <span class="collapse-icon">▼</span>
+            Response Headers
+          </label>
+          <div id="responseHeaders" class="collapsible-content expanded">
+            <div id="responseHeadersList" class="key-value-list">
+              <!-- Default header -->
+            </div>
+            <button class="btn btn-ghost btn-sm" id="addResponseHeader">+ Add Header</button>
+          </div>
+        </div>
+
+        <!-- Response Body -->
+        <div class="form-group">
+          <label class="form-label">
+            Response Body
+            <button class="btn btn-ghost btn-sm" id="formatJson">Format JSON</button>
+          </label>
+          <textarea id="responseBody" class="code-input code-input-large" placeholder='{"message": "Mocked response"}' rows="8"></textarea>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="form-actions">
+          <button class="btn btn-primary btn-lg" id="saveRule">
+            <span id="saveRuleText">Save Rule</span>
+          </button>
+          <button class="btn btn-secondary btn-lg" id="cancelEdit" style="display: none;">Cancel</button>
+        </div>
+      </section>
+
+      <!-- Right Panel - Rules List -->
+      <section class="panel rules-panel">
+        <div class="panel-header">
+          <h2>Mock Rules</h2>
+          <div class="panel-actions">
+            <button class="btn btn-ghost btn-sm" id="clearAllRules">Clear All</button>
+          </div>
+        </div>
+
+        <div class="search-box">
+          <input type="text" id="searchRules" class="form-input" placeholder="Search rules...">
+        </div>
+
+        <div id="rulesList" class="rules-list">
+          <!-- Rules will be rendered here -->
+          <div class="empty-state">
+            <div class="empty-icon">📋</div>
+            <p>No mock rules yet</p>
+            <p class="empty-hint">Paste a cURL command and configure a mock response to get started</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="../utils/curl-parser.js"></script>
+  <script src="panel.js"></script>
+</body>
+</html>
