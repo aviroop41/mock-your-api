@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mock Rules Editor - Mock your APIs</title>
+  <link rel="stylesheet" href="../../styles/rules-editor.css">
+</head>
+<body>
+  <div class="rules-editor">
+    <!-- Header -->
+    <header class="editor-header">
+      <div class="header-left">
+        <h1 class="logo">
+          <span class="logo-icon">🔧</span>
+          <span>Mock your APIs - Rules Editor</span>
+        </h1>
+        <div class="header-stats">
+          <span class="stat-badge" id="totalRulesBadge">0 Total</span>
+          <span class="stat-badge" id="activeRulesBadge">0 Active</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <label class="toggle-switch">
+          <input type="checkbox" id="globalToggle">
+          <span class="toggle-slider"></span>
+          <span class="toggle-label" id="toggleLabel">Mocking Enabled</span>
+        </label>
+        <button class="btn btn-secondary" id="refreshBtn">Refresh</button>
+        <button class="btn btn-primary" id="addRuleBtn">+ Add Rule</button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="editor-main">
+      <!-- Search and Filters -->
+      <div class="toolbar">
+        <div class="search-box">
+          <input type="text" id="searchInput" class="search-input" placeholder="Search by URL, method, or name...">
+        </div>
+        <div class="filters">
+          <select id="methodFilter" class="filter-select">
+            <option value="">All Methods</option>
+            <option value="GET">GET</option>
+            <option value="POST">POST</option>
+            <option value="PUT">PUT</option>
+            <option value="PATCH">PATCH</option>
+            <option value="DELETE">DELETE</option>
+          </select>
+          <select id="statusFilter" class="filter-select">
+            <option value="">All Status</option>
+            <option value="2xx">2xx Success</option>
+            <option value="4xx">4xx Client Error</option>
+            <option value="5xx">5xx Server Error</option>
+          </select>
+          <label class="toggle-switch toggle-sm">
+            <input type="checkbox" id="enabledFilter">
+            <span class="toggle-slider"></span>
+            <span class="toggle-label">Show Enabled Only</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Rules Grid -->
+      <div id="rulesContainer" class="rules-container">
+        <!-- Rules will be rendered here -->
+        <div class="empty-state">
+          <div class="empty-icon">📋</div>
+          <p>No mock rules yet</p>
+          <p class="empty-hint">Click "Add Rule" to create your first mock rule</p>
+        </div>
+      </div>
+    </main>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="modalTitle">Edit Rule</h2>
+          <button class="btn btn-ghost btn-icon" id="closeModal">×</button>
+        </div>
+        <div class="modal-body">
+          <form id="ruleForm">
+            <!-- Rule Name -->
+            <div class="form-group">
+              <label class="form-label">Rule Name</label>
+              <input type="text" id="editRuleName" class="form-input" placeholder="e.g., Get Users - Success Response">
+            </div>
+
+            <!-- Request Section -->
+            <div class="form-section">
+              <h3 class="section-title">Request</h3>
+              
+              <div class="form-row">
+                <div class="form-group method-group">
+                  <label class="form-label">Method</label>
+                  <select id="editMethod" class="form-select">
+                    <option value="GET">GET</option>
+                    <option value="POST">POST</option>
+                    <option value="PUT">PUT</option>
+                    <option value="PATCH">PATCH</option>
+                    <option value="DELETE">DELETE</option>
+                    <option value="HEAD">HEAD</option>
+                    <option value="OPTIONS">OPTIONS</option>
+                  </select>
+                </div>
+                <div class="form-group url-group">
+                  <label class="form-label">URL</label>
+                  <input type="text" id="editUrl" class="form-input" placeholder="https://api.example.com/endpoint">
+                </div>
+              </div>
+
+              <div class="collapsible-section">
+                <label class="collapsible-header" data-target="requestHeadersSection">
+                  <span class="collapse-icon">▼</span>
+                  Request Headers (optional)
+                </label>
+                <div id="requestHeadersSection" class="collapsible-content">
+                  <div id="editRequestHeaders" class="key-value-list"></div>
+                  <button type="button" class="btn btn-ghost btn-sm" id="addRequestHeaderBtn">+ Add Header</button>
+                </div>
+              </div>
+
+              <div class="collapsible-section">
+                <label class="collapsible-header" data-target="requestBodySection">
+                  <span class="collapse-icon">▼</span>
+                  Request Body (optional)
+                </label>
+                <div id="requestBodySection" class="collapsible-content">
+                  <textarea id="editRequestBody" class="code-input" placeholder='{"key": "value"}' rows="4"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- Response Section -->
+            <div class="form-section">
+              <h3 class="section-title">Mock Response</h3>
+              
+              <div class="form-row">
+                <div class="form-group status-group">
+                  <label class="form-label">Status Code</label>
+                  <input type="number" id="editStatusCode" class="form-input" value="200" min="100" max="599">
+                </div>
+                <div class="form-group status-text-group">
+                  <label class="form-label">Status Text</label>
+                  <input type="text" id="editStatusText" class="form-input" value="OK">
+                </div>
+              </div>
+
+              <div class="collapsible-section">
+                <label class="collapsible-header" data-target="responseHeadersSection">
+                  <span class="collapse-icon">▼</span>
+                  Response Headers
+                </label>
+                <div id="responseHeadersSection" class="collapsible-content expanded">
+                  <div id="editResponseHeaders" class="key-value-list"></div>
+                  <button type="button" class="btn btn-ghost btn-sm" id="addResponseHeaderBtn">+ Add Header</button>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">
+                  Response Body
+                  <button type="button" class="btn btn-ghost btn-sm" id="formatJsonBtn">Format JSON</button>
+                </label>
+                <textarea id="editResponseBody" class="code-input code-input-large" placeholder='{"message": "Mocked response"}' rows="10"></textarea>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="cancelEditBtn">Cancel</button>
+          <button class="btn btn-primary" id="saveEditBtn">Save Changes</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+  </div>
+
+  <script src="rules-editor.js"></script>
+</body>
+</html>

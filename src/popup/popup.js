@@ -12,6 +12,7 @@ const totalRulesEl = document.getElementById('totalRules');
 const activeRulesEl = document.getElementById('activeRules');
 const shortcutKey = document.getElementById('shortcutKey');
 const shortcutKeyAlt = document.getElementById('shortcutKeyAlt');
+const openRulesEditorBtn = document.getElementById('openRulesEditorBtn');
 
 // Detect OS for keyboard shortcuts
 const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
@@ -99,6 +100,13 @@ function setupEventListeners() {
   helpHeader.addEventListener('click', () => {
     const isExpanded = helpContent.classList.toggle('expanded');
     collapseIcon.textContent = isExpanded ? '▼' : '▶';
+  });
+  
+  // Open Rules Editor button
+  openRulesEditorBtn.addEventListener('click', () => {
+    chrome.tabs.create({
+      url: chrome.runtime.getURL('src/rules-editor/rules-editor.html')
+    });
   });
 }
 
