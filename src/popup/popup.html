@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mock your APIs</title>
+  <link rel="stylesheet" href="../../styles/popup.css">
+</head>
+<body>
+  <div class="popup">
+    <!-- Header -->
+    <div class="popup-header">
+      <div class="logo">
+        <span class="logo-icon">🔧 </span>
+        <span class="logo-text">Mock your APIs</span>
+      </div>
+      <span class="version">v1.0.0</span>
+    </div>
+
+    <!-- Status Section -->
+    <div class="status-section">
+      <div class="status-row">
+        <span class="status-label">Status</span>
+        <div class="status-indicator">
+          <span class="status-dot" id="statusDot"></span>
+          <span class="status-text" id="statusText">Loading...</span>
+        </div>
+      </div>
+      <label class="toggle-switch">
+        <input type="checkbox" id="globalToggle">
+        <span class="toggle-slider"></span>
+        <span class="toggle-label" id="toggleLabel">Enable mocking</span>
+      </label>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="stats-section">
+      <div class="stat-item">
+        <span class="stat-number" id="totalRules">0</span>
+        <span class="stat-label">Total Rules</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number" id="activeRules">0</span>
+        <span class="stat-label">Active</span>
+      </div>
+    </div>
+
+    <!-- How to Use Section -->
+    <div class="help-section">
+      <h3 class="help-title collapsible-header" id="helpHeader">
+        <span class="collapse-icon">▶</span>
+        <span>How to Use</span>
+      </h3>
+      <div class="collapsible-content" id="helpContent">
+        <ol class="help-steps">
+          <li>
+            <span class="step-icon">🛠️</span>
+            <div class="step-content">
+              <strong>Open DevTools</strong>
+              <span class="shortcut" id="shortcutKey">F12</span> or <span class="shortcut" id="shortcutKeyAlt">Ctrl+Shift+I</span>
+            </div>
+          </li>
+          <li>
+            <span class="step-icon">📋</span>
+            <div class="step-content">
+              <strong>Find "Mock your APIs" tab</strong>
+              <span class="hint">Look in the DevTools panel tabs</span>
+            </div>
+          </li>
+          <li>
+            <span class="step-icon">📝</span>
+            <div class="step-content">
+              <strong>Paste a cURL command</strong>
+              <span class="hint">Or manually configure your mock</span>
+            </div>
+          </li>
+          <li>
+            <span class="step-icon">✨</span>
+            <div class="step-content">
+              <strong>Set response & save</strong>
+              <span class="hint">Your API calls will be intercepted!</span>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="popup-footer">
+      <span class="footer-text">
+        ⭐ Star us on <a href="https://github.com/aviroop41/mock-your-api" target="_blank" class="github-link">GitHub</a> if it helped you!
+      </span>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

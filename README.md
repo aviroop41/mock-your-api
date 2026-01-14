@@ -2,18 +2,8 @@
 
 A Chrome DevTools extension for mocking API responses. Parse cURL commands, configure mock responses, and intercept browser requests to test how your frontend handles different API responses.
 
-## Features
 
-- **cURL Parser**: Paste cURL commands to automatically extract URL, method, headers, and body
-- **Request Interception**: Intercepts `fetch()` and `XMLHttpRequest` calls
-- **Flexible Mocking**: Configure custom status codes, headers, and response bodies
-- **URL + Method Matching**: Rules match requests based on exact URL and HTTP method
-- **DevTools Integration**: Dedicated panel in Chrome DevTools for easy access
-- **Enable/Disable Toggle**: Quickly enable or disable all mocking globally
-- **Per-Rule Toggles**: Enable or disable individual mock rules
-- **Dark Theme**: Matches Chrome DevTools aesthetic
-
-## Installation
+## Get Started
 
 1. Open Chrome and navigate to `chrome://extensions/`
 2. Enable **Developer mode** (toggle in the top right)
@@ -23,11 +13,12 @@ A Chrome DevTools extension for mocking API responses. Parse cURL commands, conf
 
 ## Usage
 
-### Opening the Panel
+### Opening the DevTools Panel
 
-1. Open Chrome DevTools (F12 or Right-click > Inspect)
+1. Open Chrome DevTools (`F12` or `Ctrl+Shift+I` / `⌘+⌥+I` on Mac)
 2. Look for the **Mock your APIs** tab in DevTools
 3. Click on it to open the mocking panel
+
 
 ### Creating a Mock Rule
 
@@ -48,18 +39,6 @@ A Chrome DevTools extension for mocking API responses. Parse cURL commands, conf
 
 4. Click **Save Rule**
 
-### Managing Rules
-
-- **Toggle Rule**: Use the switch on each rule card to enable/disable
-- **Edit Rule**: Click the **Edit** button to modify a rule
-- **Delete Rule**: Click the **Delete** button to remove a rule
-- **Search**: Use the search box to filter rules by URL or method
-- **Clear All**: Remove all rules at once
-
-### Global Toggle
-
-Use the **Mocking Enabled** switch in the header to quickly enable or disable all mocking without deleting your rules.
-
 ## How It Works
 
 The extension uses a content script injection strategy to intercept requests:
@@ -70,31 +49,6 @@ The extension uses a content script injection strategy to intercept requests:
 4. If a rule matches (by URL + HTTP method), the mock response is returned
 5. If no rule matches, the original request proceeds normally
 
-## Example cURL Commands
-
-```bash
-# GET request
-curl 'https://api.example.com/users' -H 'Authorization: Bearer token123'
-
-# POST request with JSON body
-curl 'https://api.example.com/users' \
-  -X POST \
-  -H 'Content-Type: application/json' \
-  -H 'Authorization: Bearer token123' \
-  -d '{"name": "John", "email": "john@example.com"}'
-
-# PUT request
-curl 'https://api.example.com/users/1' \
-  -X PUT \
-  -H 'Content-Type: application/json' \
-  -d '{"name": "Jane"}'
-```
-
-## Limitations
-
-- Only intercepts requests from the page context (not service workers or other extensions)
-- Requires the DevTools to be open for the panel to function
-- Rules are stored locally in the browser
 
 ## Troubleshooting
 
