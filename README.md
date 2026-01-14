@@ -2,6 +2,8 @@
 
 A Chrome DevTools extension for mocking API responses. Parse cURL commands, configure mock responses, and intercept browser requests to test how your frontend handles different API responses.
 
+<img width="1854" height="819" alt="image" src="https://github.com/user-attachments/assets/de747799-9c0f-425a-8cc7-5f93fc839e42" />
+
 
 ## Get Started
 
