@@ -55,6 +55,29 @@ async function init() {
   await loadRules();
   setupEventListeners();
   addDefaultResponseHeader();
+  setupStorageListener();
+}
+
+/**
+ * Listen for storage changes to sync state across views
+ */
+function setupStorageListener() {
+  chrome.storage.onChanged.addListener((changes, namespace) => {
+    if (namespace === 'local') {
+      // Update global toggle if it changed
+      if (changes.globalEnabled) {
+        elements.globalToggle.checked = changes.globalEnabled.newValue;
+        updateToggleLabel();
+      }
+      
+      // Reload rules if they changed
+      if (changes.mockRules) {
+        currentRules = changes.mockRules.newValue || [];
+        renderRulesList();
+        updateRuleCount();
+      }
+    }
+  });
 }
 
 /**

@@ -14,7 +14,6 @@ const elements = {
   toggleLabel: document.getElementById('toggleLabel'),
   totalRulesBadge: document.getElementById('totalRulesBadge'),
   activeRulesBadge: document.getElementById('activeRulesBadge'),
-  refreshBtn: document.getElementById('refreshBtn'),
   addRuleBtn: document.getElementById('addRuleBtn'),
   
   // Toolbar
@@ -36,6 +35,7 @@ const elements = {
   
   // Form fields
   editRuleName: document.getElementById('editRuleName'),
+  editCurlInput: document.getElementById('editCurlInput'),
   editMethod: document.getElementById('editMethod'),
   editUrl: document.getElementById('editUrl'),
   editRequestHeaders: document.getElementById('editRequestHeaders'),
@@ -46,6 +46,7 @@ const elements = {
   editResponseBody: document.getElementById('editResponseBody'),
   
   // Buttons
+  parseCurlBtn: document.getElementById('parseCurlBtn'),
   addRequestHeaderBtn: document.getElementById('addRequestHeaderBtn'),
   addResponseHeaderBtn: document.getElementById('addResponseHeaderBtn'),
   formatJsonBtn: document.getElementById('formatJsonBtn'),
@@ -61,6 +62,29 @@ async function init() {
   await loadGlobalState();
   await loadRules();
   setupEventListeners();
+  setupStorageListener();
+}
+
+/**
+ * Listen for storage changes to sync state across views
+ */
+function setupStorageListener() {
+  chrome.storage.onChanged.addListener((changes, namespace) => {
+    if (namespace === 'local') {
+      // Update global toggle if it changed
+      if (changes.globalEnabled) {
+        elements.globalToggle.checked = changes.globalEnabled.newValue;
+        updateToggleLabel();
+      }
+      
+      // Reload rules if they changed
+      if (changes.mockRules) {
+        allRules = changes.mockRules.newValue || [];
+        applyFilters();
+        updateStats();
+      }
+    }
+  });
 }
 
 /**
@@ -165,8 +189,8 @@ function renderRules() {
   filteredRules.forEach(rule => {
     const card = document.getElementById(`rule-${rule.id}`);
     if (card) {
-      // Toggle switch
-      const toggle = card.querySelector('.rule-toggle input');
+      // Toggle switch - fix selector to match actual HTML class
+      const toggle = card.querySelector('.toggle-switch input');
       if (toggle) {
         toggle.addEventListener('change', () => toggleRule(rule.id));
       }
@@ -291,6 +315,7 @@ function openEditModal(rule = null) {
   if (rule) {
     // Populate form with rule data
     elements.editRuleName.value = rule.name || '';
+    elements.editCurlInput.value = ''; // Clear cURL input when editing
     elements.editMethod.value = rule.request.method;
     elements.editUrl.value = rule.request.url;
     elements.editRequestBody.value = rule.request.body || '';
@@ -304,6 +329,7 @@ function openEditModal(rule = null) {
   } else {
     // Clear form for new rule
     elements.ruleForm.reset();
+    elements.editCurlInput.value = '';
     elements.editStatusCode.value = '200';
     elements.editStatusText.value = 'OK';
     elements.editRequestHeaders.innerHTML = '';
@@ -356,6 +382,7 @@ function closeEditModal() {
   elements.editModal.classList.remove('show');
   editingRuleId = null;
   elements.ruleForm.reset();
+  elements.editCurlInput.value = '';
 }
 
 /**
@@ -425,6 +452,51 @@ function collectHeaders(container) {
 }
 
 /**
+ * Parse cURL command
+ */
+function parseCurl() {
+  const curlCommand = elements.editCurlInput.value.trim();
+  
+  if (!curlCommand) {
+    showNotification('Please enter a cURL command', 'error');
+    return;
+  }
+  
+  try {
+    const parsed = CurlParser.parse(curlCommand);
+    
+    // Fill in the form
+    elements.editMethod.value = parsed.method;
+    elements.editUrl.value = parsed.url;
+    
+    // Clear and set request headers
+    elements.editRequestHeaders.innerHTML = '';
+    if (parsed.headers && Object.keys(parsed.headers).length > 0) {
+      for (const [key, value] of Object.entries(parsed.headers)) {
+        addHeaderRow(elements.editRequestHeaders, key, value);
+      }
+    }
+    
+    // Set request body
+    elements.editRequestBody.value = parsed.body || '';
+    
+    // Auto-format if JSON
+    if (parsed.body && CurlParser.isJson(parsed.body)) {
+      try {
+        const formatted = JSON.stringify(JSON.parse(parsed.body), null, 2);
+        elements.editRequestBody.value = formatted;
+      } catch (e) {
+        // Keep original if parsing fails
+      }
+    }
+    
+    showNotification('cURL parsed successfully!', 'success');
+  } catch (error) {
+    showNotification(`Parse error: ${error.message}`, 'error');
+  }
+}
+
+/**
  * Format JSON
  */
 function formatJson() {
@@ -464,9 +536,6 @@ function setupEventListeners() {
     }
   });
   
-  // Refresh button
-  elements.refreshBtn.addEventListener('click', loadRules);
-  
   // Add rule button
   elements.addRuleBtn.addEventListener('click', () => openEditModal());
   
@@ -487,6 +556,17 @@ function setupEventListeners() {
       closeEditModal();
     }
   });
+  
+  // Parse cURL button
+  elements.parseCurlBtn.addEventListener('click', parseCurl);
+  
+  // Auto-parse cURL with debounce (300ms)
+  const debouncedParse = debounce(() => {
+    if (elements.editCurlInput.value.trim()) {
+      parseCurl();
+    }
+  }, 300);
+  elements.editCurlInput.addEventListener('input', debouncedParse);
   
   // Header buttons
   elements.addRequestHeaderBtn.addEventListener('click', () => {
